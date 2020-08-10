@@ -1,7 +1,7 @@
+import 'package:easyled/BlueTooth/BlueToothFunctions.dart';
 import 'package:flutter/material.dart';
 
-import '../BlueTooth/ConnectScreen.dart';
-import '../BlueTooth/ConnectScreen.dart';
+import 'package:easyled/BlueTooth/ConnectScreen.dart';
 
 
 class homeScreen extends StatelessWidget {
@@ -16,8 +16,7 @@ class homeScreen extends StatelessWidget {
             icon: Icon(Icons.bluetooth),
             iconSize: 30,
             onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => bluetoothConnectScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => bluetoothConnectScreen()));
             },
           )
         ],
