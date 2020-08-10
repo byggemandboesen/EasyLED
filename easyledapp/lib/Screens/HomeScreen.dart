@@ -1,36 +1,29 @@
-import 'package:easyled/ThemeData.dart';
-
 import 'package:flutter/material.dart';
 
+import '../BlueTooth/ConnectScreen.dart';
+import '../BlueTooth/ConnectScreen.dart';
 
-class homeScreen extends StatefulWidget {
-  @override
-  _homeScreenState createState() => _homeScreenState();
-}
-// TODO: Fix the appbar title style with theme
-class _homeScreenState extends State<homeScreen> {
+
+class homeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: isLightTheme ? lightTheme : darkTheme,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('EasyLED'),
-          centerTitle: true,
-          actions: <Widget>[
-            IconButton(
-              icon: isLightTheme ? Icon(Icons.brightness_3) : Icon(Icons.brightness_7),
-              iconSize: 30,
-              onPressed: (){
-                setState(() {
-                  updateTheme();
-                });
-              },
-            )
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('EasyLED', style: Theme.of(context).textTheme.headline1,),
+        centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.bluetooth),
+            iconSize: 30,
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => bluetoothConnectScreen()),
+              );
+            },
+          )
+        ],
       ),
     );
   }
 }
+
 
