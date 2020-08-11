@@ -23,100 +23,63 @@ class mainBody extends StatefulWidget {
 }
 
 class _mainBodyState extends State<mainBody> {
-
-  List<ScanResult> availableDevices = [];
-
   @override
-  void initState() {
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          margin: defaultMargin,
+          child: Center(
+            child: Text('Bluetooth-devices:',
+              style: Theme.of(context).textTheme.subtitle1,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        showDevices()
+      ],
+    );
+  }
+}
+
+class showDevices extends StatefulWidget {
+  @override
+  _showDevicesState createState() => _showDevicesState();
+}
+
+class _showDevicesState extends State<showDevices> {
+  @override
+  Widget build(BuildContext context) {
+
     // Instance of flutter blue
     FlutterBlue flutterBlue = FlutterBlue.instance;
 
     // Start scanning
     flutterBlue.startScan(timeout: Duration(seconds: 2));
 
-    // Listen to scan results
-    flutterBlue.scanResults.listen((results) {
-      // do something with scan results
-      for (ScanResult deviceFound in results) {
-        print('${deviceFound.device.name} found! rssi: ${deviceFound.rssi}');
-      }
-    });
-
-    // Stop scanning
-    flutterBlue.stopScan();
-
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                margin: defaultMargin,
-                child: Text('Bluetooth-devices',
-                  style: Theme.of(context).textTheme.subtitle1,
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.refresh),
-              iconSize: 40,
-              onPressed: (){
-                setState(() {
-                  availableDevices.clear();
-                });
-              },
-            )
-          ],
-        ),
-        showDevices()
-      ],
-    );
-  }
-
-  Widget showDevices(){
-    if (availableDevices.isEmpty ||availableDevices == null){
-      return Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height*0.2,
-        margin: defaultMargin,
-        child: Center(
-          child: Text('No devices found...',
-            style: Theme.of(context).textTheme.subtitle1,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
     return Expanded(
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: availableDevices.length,
-        itemBuilder: (BuildContext context, int index){
-          return InkWell(
-            child: deviceCard(
-                availableDevices[index].device.name,
-                availableDevices[index].device.id.toString()
-            ),
-            onTap: () async{
-              try{
-                await availableDevices[index].device.connect();
-                showDialog(
-                  context: context,
-                  child: alertDialog('Connected sucessfully to ${availableDevices[index].device.name}')
-                );
-              }
-              catch(err){
-                showDialog(
-                  context: context,
-                  child: alertDialog(err.toString())
-                );
-              }
+      child: StreamBuilder(
+        stream: flutterBlue.scanResults,
+        builder: (context, snapshots){
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: snapshots.data == null ? 0 : snapshots.data.length,
+            itemBuilder: (context, index){
+              return InkWell(
+                child: deviceCard(
+                  snapshots.data[index].device.name,
+                  snapshots.data[index].device.id.toString(),
+                ),
+                onTap: () async{
+                  String connectStatus = await blueFunctions().connectToDevice(snapshots.data[index].device);
+                  showDialog(
+                      context: context,
+                      child: alertDialog(connectStatus)
+                  );
+                },
+              );
             },
           );
         },
@@ -124,6 +87,8 @@ class _mainBodyState extends State<mainBody> {
     );
   }
 }
+
+
 
 // AlertDialog shows a successful connection message or the thrown error
 class alertDialog extends StatelessWidget {
@@ -169,11 +134,17 @@ class deviceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: ListTile(
-        title: Text(cardTitle, style: Theme.of(context).textTheme.subtitle2,),
+        title: Text('Device name - ${checkUknownName()}', style: Theme.of(context).textTheme.subtitle2,),
         leading: Icon(Icons.bluetooth),
-        subtitle: Text(cardSubTitle, style: Theme.of(context).textTheme.bodyText1),
+        subtitle: Text('Device ID - $cardSubTitle', style: Theme.of(context).textTheme.bodyText1),
       ),
     );
   }
+
+  // Checks if the device' name is null or ''
+  String checkUknownName(){
+    return cardTitle == '' || cardTitle == null ? 'Unkown name' : cardTitle;
+  }
+
 }
 
