@@ -57,12 +57,25 @@ class _showDevicesState extends State<showDevices> {
     FlutterBlue flutterBlue = FlutterBlue.instance;
 
     // Start scanning
-    flutterBlue.startScan(timeout: Duration(seconds: 2));
+    flutterBlue.startScan();
 
     return Expanded(
       child: StreamBuilder(
         stream: flutterBlue.scanResults,
         builder: (context, snapshots){
+          if(!snapshots.hasData)
+            return Column(
+              children: <Widget>[
+                CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor,
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).accentColor),
+                ),
+                Text(
+                  'Finding bluetooth devices...',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.subtitle2,
+                )
+              ],
+            );
           return ListView.builder(
             shrinkWrap: true,
             itemCount: snapshots.data == null ? 0 : snapshots.data.length,
@@ -71,8 +84,10 @@ class _showDevicesState extends State<showDevices> {
                 child: deviceCard(
                   snapshots.data[index].device.name,
                   snapshots.data[index].device.id.toString(),
+                  snapshots.data[index].rssi.toString()
                 ),
                 onTap: () async{
+                  flutterBlue.stopScan();
                   String connectStatus = await blueFunctions().connectToDevice(snapshots.data[index].device);
                   showDialog(
                       context: context,
@@ -118,10 +133,11 @@ class alertDialog extends StatelessWidget {
 class deviceCard extends StatelessWidget {
 
   // Required data to pass to the card widget with bluetooth devices
-  deviceCard(this.cardTitle, this.cardSubTitle);
+  deviceCard(this.cardTitle, this.cardSubTitle, this.deviceRSSI);
 
   String cardTitle;
   String cardSubTitle;
+  String deviceRSSI;
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +153,7 @@ class deviceCard extends StatelessWidget {
         title: Text('Device name - ${checkUknownName()}', style: Theme.of(context).textTheme.subtitle2,),
         leading: Icon(Icons.bluetooth),
         subtitle: Text('Device ID - $cardSubTitle', style: Theme.of(context).textTheme.bodyText1),
+        trailing: Text('RSSI: $deviceRSSI dBm', style: Theme.of(context).textTheme.bodyText1),
       ),
     );
   }

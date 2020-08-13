@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 //---------------------------------COLORS-------------------------------------//
 
@@ -29,12 +28,12 @@ ThemeData defaultTheme = ThemeData(
   ),
     textTheme: TextTheme(
       headline1: TextStyle(fontSize: 30, color: defaultOrange, fontWeight: FontWeight.bold),
-      subtitle1: TextStyle(fontSize: 20, color: Colors.white),
+      subtitle1: TextStyle(fontSize: 30, color: Colors.white),
       subtitle2: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
       bodyText1: TextStyle(fontSize: 15, color: Colors.white)
   ),
     iconTheme: IconThemeData(
-    color: defaultOrange,
+      color: defaultOrange,
   ),
     cardTheme: CardTheme(
       color: defaultBlue,
