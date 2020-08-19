@@ -10,6 +10,13 @@ class bluetoothConnectScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Connect', style: Theme.of(context).textTheme.headline1,),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, size: 30,),
+          onPressed: (){
+            FlutterBlue.instance.stopScan();
+            Navigator.pop(context);
+          },
+        ),
         centerTitle: true,
       ),
       body: mainBody(),
@@ -28,13 +35,28 @@ class _mainBodyState extends State<mainBody> {
     return Column(
       children: <Widget>[
         Container(
-          width: MediaQuery.of(context).size.width,
-          height: 50,
+          width: 350,
+          height: 60,
           margin: defaultMargin,
-          child: Center(
-            child: Text('Bluetooth-devices:',
-              style: Theme.of(context).textTheme.subtitle1,
-              textAlign: TextAlign.center,
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            border: Border.all(color: Theme.of(context).accentColor),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [BoxShadow(color: Theme.of(context).accentColor, blurRadius: 5)]
+          ),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+            child: TextField(
+              decoration:  InputDecoration(
+                  hintText: 'Search for device',
+                  hintStyle: Theme.of(context).textTheme.bodyText2,
+                  prefixIcon: Icon(Icons.bluetooth, color: Theme.of(context).accentColor, size: 20),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Theme.of(context).accentColor),),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Theme.of(context).accentColor)),
+              ),
+              onChanged: (value) {
+                // TODO: Filter bluetooth list
+              },
             ),
           ),
         ),
@@ -63,28 +85,32 @@ class _showDevicesState extends State<showDevices> {
       child: StreamBuilder(
         stream: flutterBlue.scanResults,
         builder: (context, snapshots){
-          if(!snapshots.hasData)
+          if(snapshots.data == null || snapshots.data.length == 0){
             return Column(
               children: <Widget>[
                 CircularProgressIndicator(backgroundColor: Theme.of(context).primaryColor,
                   valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).accentColor),
                 ),
-                Text(
-                  'Finding bluetooth devices...',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.subtitle2,
+                Container(
+                  margin: EdgeInsets.only(top: 20),
+                  child: Text(
+                    'Finding bluetooth devices...',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.subtitle2,
+                  ),
                 )
               ],
             );
+          }
           return ListView.builder(
             shrinkWrap: true,
             itemCount: snapshots.data == null ? 0 : snapshots.data.length,
             itemBuilder: (context, index){
               return InkWell(
                 child: deviceCard(
-                  snapshots.data[index].device.name,
-                  snapshots.data[index].device.id.toString(),
-                  snapshots.data[index].rssi.toString()
+                    snapshots.data[index].device.name,
+                    snapshots.data[index].device.id.toString(),
+                    snapshots.data[index].rssi.toString()
                 ),
                 onTap: () async{
                   flutterBlue.stopScan();
